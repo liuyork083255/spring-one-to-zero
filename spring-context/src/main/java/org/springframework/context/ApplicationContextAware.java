@@ -55,6 +55,15 @@ import org.springframework.beans.factory.Aware;
  * @see MessageSourceAware
  * @see org.springframework.context.support.ApplicationObjectSupport
  * @see org.springframework.beans.factory.BeanFactoryAware
+ *
+ * otz:
+ * 	一般情况下，bean 无需知道spring 容器的存在，也就是spring 容器可以在应用中完全被忽略，但是如果一个 bean 想要获取 bean工厂
+ * 	则可以实现 这个接口
+ * 	也就是实现了该接口，就有访问spring容器的能力
+ * 	注意：
+ * 		这个bean必须要是一个spring所管理的bean，也就是本身需要注入到容器中
+ *  如果需要获取 纯粹的简单工厂 则可以实现 BeanFactoryAware
+ *
  */
 public interface ApplicationContextAware extends Aware {
 

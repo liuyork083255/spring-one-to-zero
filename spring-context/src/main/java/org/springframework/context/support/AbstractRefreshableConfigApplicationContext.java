@@ -39,6 +39,9 @@ import org.springframework.util.StringUtils;
 public abstract class AbstractRefreshableConfigApplicationContext extends AbstractRefreshableApplicationContext
 		implements BeanNameAware, InitializingBean {
 
+	/**
+	 * 保存 xml 配置文件路径
+	 */
 	@Nullable
 	private String[] configLocations;
 
@@ -78,6 +81,7 @@ public abstract class AbstractRefreshableConfigApplicationContext extends Abstra
 			Assert.noNullElements(locations, "Config locations must not be null");
 			this.configLocations = new String[locations.length];
 			for (int i = 0; i < locations.length; i++) {
+				/* 生成系统环境对象和解决路径${}包含此等占位符 */
 				this.configLocations[i] = resolvePath(locations[i]).trim();
 			}
 		}
@@ -122,6 +126,17 @@ public abstract class AbstractRefreshableConfigApplicationContext extends Abstra
 	 * @see org.springframework.core.env.Environment#resolveRequiredPlaceholders(String)
 	 */
 	protected String resolvePath(String path) {
+		/**
+		 * {@link org.springframework.core.env.AbstractEnvironment#resolveRequiredPlaceholders(String)}
+		 *
+		 * 比如配置文件有 spring-dev-config.xml
+		 * 代码中获取文件名称为:spring-${dev}-config.xml
+		 * 那么只需要在程序启动是注入系统变量 dev 即可
+		 * e.g.
+		 * 	System.setProperty("key", "dev")
+		 * 这样 getEnvironment() 构建的属性就会包含这个属性值，然后替换占位符
+		 *
+		 */
 		return getEnvironment().resolveRequiredPlaceholders(path);
 	}
 

@@ -58,6 +58,14 @@ package org.springframework.context;
  * @since 3.0
  * @see LifecycleProcessor
  * @see ConfigurableApplicationContext
+ *
+ * otz:
+ * 	是 Lifecycle 的一种增强，因为 Lifecycle 是不会主动回调，需要用户显示的调用其方法才可以回调
+ * 	但是如果实现 SmartLifecycle 接口，那么就可以实现主动回调，容器上下文在启动、关闭都会调用对应的方法
+ *
+ * 回调如果牵涉到顺序，那么可以通过{@link #getPhase()}来实现，需要注意：start和stop 的执行顺序相反的
+ * 比如 {@link #getPhase()} 返回值越小，start越先执行，但是 stop却是最后执行
+ *
  */
 public interface SmartLifecycle extends Lifecycle, Phased {
 
@@ -120,6 +128,10 @@ public interface SmartLifecycle extends Lifecycle, Phased {
 	 * @see #start()
 	 * @see #stop(Runnable)
 	 * @see org.springframework.context.support.DefaultLifecycleProcessor#getPhase(Lifecycle)
+	 *
+	 * 如果有多个bean实现了该接口，需要控制执行顺序则采用该方法
+	 * 返回值越小，优先级越高，默认是 Integer.MAX_VALUE，即最后一个被执行
+	 *
 	 */
 	@Override
 	default int getPhase() {

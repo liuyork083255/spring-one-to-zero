@@ -54,6 +54,10 @@ import org.springframework.lang.Nullable;
  * @since 16 April 2001
  * @see HierarchicalBeanFactory
  * @see BeanFactoryUtils
+ *
+ * otz:
+ * 	主要提供了批量获取 bean、bean定义、bean类型 方法
+ *
  */
 public interface ListableBeanFactory extends BeanFactory {
 

@@ -70,7 +70,13 @@ public abstract class AbstractRefreshableApplicationContext extends AbstractAppl
 	@Nullable
 	private Boolean allowCircularReferences;
 
-	/** Bean factory for this context. */
+	/**
+	 * Bean factory for this context.
+	 * ApplicationContext 实现了 BeanFactory 接口，但是并非直接作为 Bean 容器。
+	 * ApplicationContext 中真正直接作为 Bean 容器的是一个内部Bean工厂 BeanFactory，
+	 * 通过其方法 getBeanFactory() 得到，此方法在 AbstractApplicationContext 中
+	 * 被声明为 abstract， 其实现要求由实现子类提供。
+	 */
 	@Nullable
 	private DefaultListableBeanFactory beanFactory;
 
@@ -122,6 +128,7 @@ public abstract class AbstractRefreshableApplicationContext extends AbstractAppl
 	 */
 	@Override
 	protected final void refreshBeanFactory() throws BeansException {
+		/* 初始化是没有 bean factory */
 		if (hasBeanFactory()) {
 			destroyBeans();
 			closeBeanFactory();

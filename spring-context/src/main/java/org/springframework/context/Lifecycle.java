@@ -46,6 +46,30 @@ package org.springframework.context;
  * @see ConfigurableApplicationContext
  * @see org.springframework.jms.listener.AbstractMessageListenerContainer
  * @see org.springframework.scheduling.quartz.SchedulerFactoryBean
+ *
+ * otz:
+ * 	Lifecycle 在开发中用的很少，原因是实现了这个接口的bean并不会在主动被回调，而是需要被动执行组件的相关方法才会被执行
+ * 	如果考虑到这个原因，则可以使用 {@link SmartLifecycle}
+ *
+ * 	e.g.
+ * 		一个类实现该接口 Lifecycle，spring容器启动后这些方法并不会被调用，需要手动获取上下文 context，然后调用 start stop
+ * 		这个时候，spring 容器将在容器上下文中找出所有实现了 LifeCycle 及其子类接口的类，并一一调用它们实现的类
+ * 	不过 spring是通过委托给生命周期处理器 LifecycleProcessor 来实现这一点的。
+ *
+ * 这里需要和 bean 的生命周期回调方法区分开
+ * 	{@link org.springframework.beans.factory.InitializingBean}
+ * 		初始化bean之后会调用这个接口方法 等价于{@link javax.annotation.PostConstruct}
+ * 	{@link org.springframework.beans.factory.DisposableBean}
+ * 		销毁bean之后会调用这个接口方法 等于于 {@link javax.annotation.PreDestroy}
+ *
+ * 初始化方法还可以通过 xml 配置方式指定
+ * 		<bean id="" class="class" init-method="init3" destroy-method="destroy3"/>
+ *
+ * 所以针对实现了 注解、接口、xml配置 三种初始化，执行顺序如下：
+ * 		1. @PostConstruct 注解方式
+ * 		2. InitializingBean 实现接口方式
+ * 		3. custom init() 自定义初始化方法方式
+ *
  */
 public interface Lifecycle {
 
@@ -55,6 +79,9 @@ public interface Lifecycle {
 	 * <p>In the case of a container, this will propagate the start signal to all
 	 * components that apply.
 	 * @see SmartLifecycle#isAutoStartup()
+	 *
+	 * 在容器的情况下，这会将 开始信号 传播到应用的所有组件中去
+	 * 前提是需要主动调用容器该方法
 	 */
 	void start();
 
@@ -80,6 +107,10 @@ public interface Lifecycle {
 	 * <p>In the case of a container, this will return {@code true} only if <i>all</i>
 	 * components that apply are currently running.
 	 * @return whether the component is currently running
+	 *
+	 * 检查此组件是否正在运行。
+	 * 		1. 只有该方法返回false时，start方法才会被执行。
+	 * 		2. 只有该方法返回true时，stop(Runnable callback)或stop()方法才会被执行。
 	 */
 	boolean isRunning();
 

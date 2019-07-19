@@ -49,6 +49,14 @@ import org.springframework.core.io.Resource;
  * @see XmlBeanDefinitionReader
  * @deprecated as of Spring 3.1 in favor of {@link DefaultListableBeanFactory} and
  * {@link XmlBeanDefinitionReader}
+ *
+ * otz:
+ * 	DefaultListableBeanFactory 是 BeanFactory 系列，它实现了 BeanFactory 系列的所有接口，也就是一个可以独立使用的 ioc 容器
+ * 	因此可以这么说，DefaultListableBeanFactory 是整个 spring ioc 的始祖
+ *
+ *  XmlBeanFactory 继承了 DefaultListableBeanFactory，主要就是提供了封装 xml 解析的 reader
+ *  但是已经被弃用了，采用 ClasPathXmlApplicationContext
+ *
  */
 @Deprecated
 @SuppressWarnings({"serial", "all"})

@@ -110,6 +110,9 @@ public interface PropertyResolver {
 	 * @throws IllegalArgumentException if given text is {@code null}
 	 * or if any placeholders are unresolvable
 	 * @see org.springframework.util.SystemPropertyUtils#resolvePlaceholders(String, boolean)
+	 * otz:
+	 * 	将参数 text 中的包含的 ${} 占位符替换成属性值，通过调用 {@link #getProperty}
+	 * 	如果不存在就会抛出异常
 	 */
 	String resolveRequiredPlaceholders(String text) throws IllegalArgumentException;
 

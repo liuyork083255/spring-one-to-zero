@@ -38,6 +38,10 @@ import org.springframework.lang.Nullable;
  * @author Juergen Hoeller
  * @since 03.11.2003
  * @see org.springframework.context.support.AbstractApplicationContext#getBeanFactory()
+ *
+ * otz:
+ * 	除了ConfigurableBeanFactory，它还提供了分析和修改bean定义以及预实例化单例的工具。
+ *
  */
 public interface ConfigurableListableBeanFactory
 		extends ListableBeanFactory, AutowireCapableBeanFactory, ConfigurableBeanFactory {

@@ -114,6 +114,15 @@ import org.springframework.util.StringUtils;
  * @see #addBeanPostProcessor
  * @see #getBean
  * @see #resolveDependency
+ *
+ * otz:
+ * 	spring 容器主要分为两个系列，{@link BeanFactory}（工厂） 和 ApplicationContext（上下文）
+ * 	不管是哪一个系列，格子的接口非常多，而 DefaultListableBeanFactory 就是对于 BeanFactory 系列的最终实现，
+ * 	也就是说真正可以作为一个可以独立使用的ioc容器还是 DefaultListableBeanFactory，
+ * 	因此可以这么说：DefaultListableBeanFactory 是整个spring ioc的始祖
+ *
+ * 虽然还有子类 {@link org.springframework.beans.factory.xml.XmlBeanFactory} 但是已经被弃用
+ *
  */
 @SuppressWarnings("serial")
 public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFactory

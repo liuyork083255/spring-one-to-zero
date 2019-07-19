@@ -50,12 +50,24 @@ public class PropertyPlaceholderHelper {
 	}
 
 
+	/**
+	 * ${
+	 */
 	private final String placeholderPrefix;
 
+	/**
+	 * }
+	 */
 	private final String placeholderSuffix;
 
+	/**
+	 * {
+	 */
 	private final String simplePrefix;
 
+	/**
+	 * :
+	 */
 	@Nullable
 	private final String valueSeparator;
 
@@ -127,6 +139,7 @@ public class PropertyPlaceholderHelper {
 	protected String parseStringValue(
 			String value, PlaceholderResolver placeholderResolver, @Nullable Set<String> visitedPlaceholders) {
 
+		/* this.placeholderPrefix = ${ */
 		int startIndex = value.indexOf(this.placeholderPrefix);
 		if (startIndex == -1) {
 			return value;
@@ -134,9 +147,12 @@ public class PropertyPlaceholderHelper {
 
 		StringBuilder result = new StringBuilder(value);
 		while (startIndex != -1) {
+			/* 查找 } 所在下标 */
 			int endIndex = findPlaceholderEndIndex(result, startIndex);
 			if (endIndex != -1) {
+				/* placeholder 就是 ${} 中的真实值 */
 				String placeholder = result.substring(startIndex + this.placeholderPrefix.length(), endIndex);
+
 				String originalPlaceholder = placeholder;
 				if (visitedPlaceholders == null) {
 					visitedPlaceholders = new HashSet<>(4);

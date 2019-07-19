@@ -50,6 +50,14 @@ package org.springframework.core.env;
  * @see ConfigurableEnvironment
  * @see SystemEnvironmentPropertySource
  * @see org.springframework.web.context.support.StandardServletEnvironment
+ * otz:
+ * 	用于保存系统的 JVM 和 属性值
+ *
+ * {@link #activeProfiles} 标记运行环境所激活的配置文件 dev test pord
+ * {@link #defaultProfiles} 默认的激活配置文件 默认：default
+ * {@link #propertySources} 默认有两个 properties
+ * 		systemProperties	保存一些系统的属性值（Map 结构）
+ * 		systemEnvironment	保存一些 JVM 属性值（Map 结构）
  */
 public class StandardEnvironment extends AbstractEnvironment {
 

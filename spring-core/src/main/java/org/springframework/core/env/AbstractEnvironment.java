@@ -572,6 +572,7 @@ public abstract class AbstractEnvironment implements ConfigurableEnvironment {
 
 	@Override
 	public String resolveRequiredPlaceholders(String text) throws IllegalArgumentException {
+		/** {@link AbstractPropertyResolver#resolveRequiredPlaceholders(String)} */
 		return this.propertyResolver.resolveRequiredPlaceholders(text);
 	}
 
