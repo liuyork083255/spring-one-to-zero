@@ -128,16 +128,36 @@ public abstract class AbstractRefreshableApplicationContext extends AbstractAppl
 	 */
 	@Override
 	protected final void refreshBeanFactory() throws BeansException {
-		/* 初始化是没有 bean factory */
+		/*
+		 * 通过beanFactoryMonitor这个Bean工厂的监视器来判断是否已经实例化了BeanFactory
+		 * 注意：
+		 * 	应用中 BeanFactory 本来就是可以多个的，这里可不是说应用全局是否有 BeanFactory，而是当前 ApplicationContext 是否有 BeanFactory
+		 */
 		if (hasBeanFactory()) {
+			/* 如果实例化了BeanFactory，则先销毁所有的单例Bean */
 			destroyBeans();
+			/* 关闭BeanFactory，也就是将beanFactory的值置为null */
 			closeBeanFactory();
 		}
 		try {
+			/**
+			 * 创建BeanFactory实例，
+			 * 如果实现了ConfigurableApplicationContext则返回父上下文的内部bean工厂;否则，返回父上下文本身
+			 */
 			DefaultListableBeanFactory beanFactory = createBeanFactory();
+
+			/* 用于 BeanFactory 的序列化，部分人应该都用不到 */
 			beanFactory.setSerializationId(getId());
+
+			/* 设置 BeanFactory 的两个配置属性：是否允许 Bean 覆盖、是否允许循环引用 */
 			customizeBeanFactory(beanFactory);
+
+			/**
+			 * 加载 bean 的定义到 BeanFactory
+			 * ClassPathXml 加载进入 {@link AbstractXmlApplicationContext#loadBeanDefinitions(DefaultListableBeanFactory)}
+			 */
 			loadBeanDefinitions(beanFactory);
+
 			synchronized (this.beanFactoryMonitor) {
 				this.beanFactory = beanFactory;
 			}
@@ -229,9 +249,22 @@ public abstract class AbstractRefreshableApplicationContext extends AbstractAppl
 	 * @see DefaultListableBeanFactory#setAllowEagerClassLoading
 	 */
 	protected void customizeBeanFactory(DefaultListableBeanFactory beanFactory) {
+		/**
+		 * 设置 bean 定义是否可以被覆盖
+		 * BeanDefinition 的覆盖问题大家也许会碰到，就是在配置文件中定义 bean 时使用了相同的 id 或 name
+		 * 默认情况下，allowBeanDefinitionOverriding 属性为 null，如果在同一配置文件中重复了，会抛错
+		 * 但是如果不是同一配置文件中，会发生覆盖。
+		 */
 		if (this.allowBeanDefinitionOverriding != null) {
 			beanFactory.setAllowBeanDefinitionOverriding(this.allowBeanDefinitionOverriding);
 		}
+
+		/**
+		 * 循环引用：A 依赖 B，而 B 依赖 A。或 A 依赖 B，B 依赖 C，而 C 依赖 A
+		 * 主要注意的是：
+		 * 	spring 默认是支持循环依赖的，但是如果出现在构造方法中依赖就会报错
+		 * 	比如 A 的构造方法中依赖 B，在 B 的构造方法中依赖 A 会保存
+		 */
 		if (this.allowCircularReferences != null) {
 			beanFactory.setAllowCircularReferences(this.allowCircularReferences);
 		}

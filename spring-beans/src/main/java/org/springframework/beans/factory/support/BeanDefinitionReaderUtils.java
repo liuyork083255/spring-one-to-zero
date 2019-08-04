@@ -157,18 +157,26 @@ public abstract class BeanDefinitionReaderUtils {
 	 * @param registry the bean factory to register with
 	 * @throws BeanDefinitionStoreException if registration failed
 	 */
-	public static void registerBeanDefinition(
-			BeanDefinitionHolder definitionHolder, BeanDefinitionRegistry registry)
-			throws BeanDefinitionStoreException {
+	public static void registerBeanDefinition(BeanDefinitionHolder definitionHolder, BeanDefinitionRegistry registry) throws BeanDefinitionStoreException {
 
 		// Register bean definition under primary name.
 		String beanName = definitionHolder.getBeanName();
+
+		/**
+		 *  注册这个 Bean
+		 *  {@link DefaultListableBeanFactory#registerBeanDefinition(String, BeanDefinition)}
+		 *  */
 		registry.registerBeanDefinition(beanName, definitionHolder.getBeanDefinition());
 
 		// Register aliases for bean name, if any.
+		/* 如果还有别名的话，也要根据别名统统注册一遍，不然根据别名就找不到 Bean 了 */
 		String[] aliases = definitionHolder.getAliases();
 		if (aliases != null) {
 			for (String alias : aliases) {
+				/*
+				 * alias -> beanName 保存它们的别名信息，这个很简单，用一个 map 保存一下就可以了
+				 * 获取的时候，会先将 alias 转换为 beanName，然后再查找
+				 */
 				registry.registerAlias(beanName, alias);
 			}
 		}

@@ -38,6 +38,21 @@ package org.springframework.context;
  * @see org.springframework.web.context.ContextLoader#CONTEXT_INITIALIZER_CLASSES_PARAM
  * @see org.springframework.web.servlet.FrameworkServlet#setContextInitializerClasses
  * @see org.springframework.web.servlet.FrameworkServlet#applyInitializers
+ *
+ * otz:
+ * 	ApplicationContextInitializer 接口是在 spring 容器刷新之前执行的一个回调函数
+ *
+ * 	使用方式
+ * 		1 spring-boot 启动：
+ * 			SpringApplication application = new SpringApplication(Application.class)
+ * 			application.addInitializers(ApplicationContextInitializer1);
+ * 			application.run(args);
+ * 		2 在 application.properties 中定义:
+ *			context.initializer.classes = ApplicationContextInitializer1,ApplicationContextInitializer2
+ * 		3 在 META-INF/spring.factories 文件添加：
+ * 			org.springframework.context.ApplicationContextInitializer=ApplicationContextInitializer1
+ *
+ * ApplicationContextInitializer 的使用一般和 {@link org.springframework.core.annotation.Order} 结合，表示初始化器的顺序
  */
 public interface ApplicationContextInitializer<C extends ConfigurableApplicationContext> {
 

@@ -38,6 +38,9 @@ import org.springframework.util.ResourceUtils;
  * @see org.springframework.core.io.support.ResourcePatternResolver
  * @see org.springframework.context.ApplicationContext
  * @see org.springframework.context.ResourceLoaderAware
+ *
+ * otz:
+ * 	定义资源加载器，主要根据资源文件的路径返回对应的 {@link Resource}
  */
 public interface ResourceLoader {
 

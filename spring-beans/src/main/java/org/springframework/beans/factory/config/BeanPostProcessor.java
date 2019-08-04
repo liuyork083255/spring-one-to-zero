@@ -39,6 +39,9 @@ import org.springframework.lang.Nullable;
  * @see DestructionAwareBeanPostProcessor
  * @see ConfigurableBeanFactory#addBeanPostProcessor
  * @see BeanFactoryPostProcessor
+ * otz:
+ * 	实现了这个接口的 bean，会在初始化的时候被调用
+ * 	分别在初始化前后初始化后被调用
  */
 public interface BeanPostProcessor {
 

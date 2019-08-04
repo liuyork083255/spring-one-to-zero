@@ -33,6 +33,7 @@ import org.springframework.lang.Nullable;
  *
  * otz:
  * 	主要提供了访问父容器的功能
+ * 	我们可以在应用中起多个 BeanFactory，然后可以将各个 BeanFactory 设置为父子关系
  */
 public interface HierarchicalBeanFactory extends BeanFactory {
 
