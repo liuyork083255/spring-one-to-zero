@@ -55,6 +55,28 @@ import org.springframework.lang.Nullable;
  * @see org.springframework.beans.factory.BeanFactory
  * @see org.springframework.aop.framework.ProxyFactoryBean
  * @see org.springframework.jndi.JndiObjectFactoryBean
+ *
+ * otz:
+ * 	BeanFactory 接口是 IOC 顶层容器接口，用于访问 bean 的，其实也会创建 bean
+ * 	而 FactoryBean 则是专门用于创建 bean 的，通过实现该接口可以对bean进行一些额外的操作
+ *  比如创建一个 bean 有很多判断或者逻辑，那么就可以实现这个接口
+ *  具体操作:
+ *  	泛型T，就是创建 bean 的类型，比如要创建 bean 的类型是 Student
+ *
+ *  	{@link #getObject()}
+ *  			返回 Student 实例，创建这个实例的时候，就可以加入额外的 判断和逻辑
+ *  	{@link #getObjectType()}
+ *  			这个工厂生产 bean 实例的 class 类型，也就是泛型的类型
+ *  	{@link #isSingleton()}
+ *  			生产这个 bean 是否采用单例，默认返回 true，单例模式
+ *
+ *	xml 配置:
+ *		<bean id="student" class="liu.york.StudentFactoryBean" p:username="LiuYork"/>
+ *		Note：p 指的是参数，可以传入自定义参数
+ *			  p:username="LiuYork" 含义：StudentFactoryBean 类中有一个 username 参数，并且将 LiuYork 赋值给该参数
+ *
+ * 	使用：
+ * 		xmlBeanFactory.getBean("student", Student.class);
  */
 public interface FactoryBean<T> {
 

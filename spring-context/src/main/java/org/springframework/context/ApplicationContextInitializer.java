@@ -52,6 +52,8 @@ package org.springframework.context;
  * 		3 在 META-INF/spring.factories 文件添加：
  * 			org.springframework.context.ApplicationContextInitializer=ApplicationContextInitializer1
  *
+ * 		可以发现，使用场景都是 spring-boot，而且在 spring 的 refresh 中没有调用机制，而是在 spring-boot 中的 prepareContext 环境
+ *
  * ApplicationContextInitializer 的使用一般和 {@link org.springframework.core.annotation.Order} 结合，表示初始化器的顺序
  */
 public interface ApplicationContextInitializer<C extends ConfigurableApplicationContext> {

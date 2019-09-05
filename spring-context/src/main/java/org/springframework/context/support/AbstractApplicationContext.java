@@ -968,6 +968,11 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 	 * <p>This implementation is empty.
 	 * @throws BeansException in case of errors
 	 * @see #refresh()
+	 *
+	 * otz:
+	 * 	这个接口比较重要，尤其是 spring-boot-web 环境中会调用 EmbeddedWebApplicationContext#onRefresh 方法
+	 * 	里面会调用 createEmbeddedServletContainer 方法创建 tomcat 内嵌容器
+	 *
 	 */
 	protected void onRefresh() throws BeansException {
 		// For subclasses: do nothing by default.
