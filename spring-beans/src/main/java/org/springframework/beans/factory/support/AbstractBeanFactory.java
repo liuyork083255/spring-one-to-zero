@@ -44,18 +44,7 @@ import org.springframework.beans.PropertyEditorRegistrySupport;
 import org.springframework.beans.SimpleTypeConverter;
 import org.springframework.beans.TypeConverter;
 import org.springframework.beans.TypeMismatchException;
-import org.springframework.beans.factory.BeanCreationException;
-import org.springframework.beans.factory.BeanCurrentlyInCreationException;
-import org.springframework.beans.factory.BeanDefinitionStoreException;
-import org.springframework.beans.factory.BeanFactory;
-import org.springframework.beans.factory.BeanFactoryUtils;
-import org.springframework.beans.factory.BeanIsAbstractException;
-import org.springframework.beans.factory.BeanIsNotAFactoryException;
-import org.springframework.beans.factory.BeanNotOfRequiredTypeException;
-import org.springframework.beans.factory.CannotLoadBeanClassException;
-import org.springframework.beans.factory.FactoryBean;
-import org.springframework.beans.factory.NoSuchBeanDefinitionException;
-import org.springframework.beans.factory.SmartFactoryBean;
+import org.springframework.beans.factory.*;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.BeanDefinitionHolder;
 import org.springframework.beans.factory.config.BeanExpressionContext;
@@ -166,7 +155,10 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 	/** Map from bean name to merged RootBeanDefinition. */
 	private final Map<String, RootBeanDefinition> mergedBeanDefinitions = new ConcurrentHashMap<>(256);
 
-	/** Names of beans that have already been created at least once. */
+	/**
+	 * Names of beans that have already been created at least once.
+	 * 用来保存 beanName 至少已经被创建或者正在被创建中，因为在创建前会将这个 beanName 存入该集合中
+	 */
 	private final Set<String> alreadyCreated = Collections.newSetFromMap(new ConcurrentHashMap<>(256));
 
 	/** Names of beans that are currently in creation. */
@@ -325,6 +317,7 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 				 * 注意，这里的依赖指的是 depends-on 中定义的依赖
 				 */
 				String[] dependsOn = mbd.getDependsOn();
+				/** 一般情况下这个都是 null */
 				if (dependsOn != null) {
 					for (String dep : dependsOn) {
 						/* 检查是不是有循环依赖，这里的循环依赖和我们前面说的循环依赖又不一样，这里肯定是不允许出现的，不然要乱套了 */
@@ -348,6 +341,15 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 				// Create bean instance.
 				/* 创建 singleton 的实例 */
 				if (mbd.isSingleton()) {
+					/**
+					 * 创建 bean
+					 * 这里采用的是 {@link ObjectFactory#getObject()} 创建 bean，也就是所说的所有 bean 都应该由工厂来创建
+					 * 但是开发者一般都不会指定工厂，直接采用类似 @Service 注解来创建，所以这里 spring 就采用匿名内部类(java8语法)
+					 * 来实现，下面的 createBean(beanName, mbd, args); 会在 getSingleton 方法中被调用
+					 *
+					 *
+					 *
+					 */
 					sharedInstance = getSingleton(beanName, () -> {
 						try {
 							/* 执行创建 Bean */
@@ -1606,8 +1608,11 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 	 * <p>This allows the bean factory to optimize its caching for repeated
 	 * creation of the specified bean.
 	 * @param beanName the name of the bean
+	 * one-to-zero:
+	 *                 用于标记当前这个 bean 被创建或者正要创建，从而避免出现重复创建
 	 */
 	protected void markBeanAsCreated(String beanName) {
+		/** 知识点：并发双重判断，因为 add 操作没有牵涉到 指令重排序，所以不需要 volatile 关键字 */
 		if (!this.alreadyCreated.contains(beanName)) {
 			synchronized (this.mergedBeanDefinitions) {
 				if (!this.alreadyCreated.contains(beanName)) {

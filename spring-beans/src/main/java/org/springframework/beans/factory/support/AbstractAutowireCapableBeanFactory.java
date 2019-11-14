@@ -604,13 +604,19 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 				logger.trace("Eagerly caching bean '" + beanName +
 						"' to allow for resolving potential circular references");
 			}
+			/**
+			 * 前面已经创建出来了 bean 实例，这里将这个实例存入 beanFactory
+			 */
 			addSingletonFactory(beanName, () -> getEarlyBeanReference(beanName, mbd, bean));
 		}
 
 		// Initialize the bean instance.
 		Object exposedObject = bean;
 		try {
-			/* 这一步也是非常关键的，这一步负责属性装配，因为前面的实例只是实例化了，并没有设值，这里就是设值 */
+			/**
+			 * 这一步非常关键的，这一步负责属性装配，因为前面的实例只是实例化了，并没有设值，这里就是设值
+			 * 比如 @Value @Autowire @Resource 都是通过这个方法设置
+			 * */
 			populateBean(beanName, mbd, instanceWrapper);
 			/**
 			 * 还记得 init-method 吗？还有 InitializingBean 接口？还有 BeanPostProcessor 接口？
@@ -1167,6 +1173,11 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 	 * @see #instantiateUsingFactoryMethod
 	 * @see #autowireConstructor
 	 * @see #instantiateBean
+	 *
+	 * one-to-zero:
+	 * 	核心就是判断构造方法来创建 bean 实例
+	 * 	一般情况下基本都是通过无参构造方法来创建 bean 实例
+	 *
 	 */
 	protected BeanWrapper createBeanInstance(String beanName, RootBeanDefinition mbd, @Nullable Object[] args) {
 		// Make sure bean class is actually resolved at this point.

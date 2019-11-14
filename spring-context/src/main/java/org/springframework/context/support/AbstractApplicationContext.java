@@ -547,8 +547,8 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 
 			try {
 				/**
-				 * 这个方法主要注册web请求相关的处理器和bean以及配置
-				 * 比如启动方式是非 web 环境，那么这个方法什么都不做
+				 * 这个方法主要注册web请求相关的处理器和bean以及配置 进入 springboot：{@link AnnotationConfigServletWebServerApplicationContext#postProcessBeanFactory}
+				 * 比如启动方式是非 web 环境，那么这个方法什么都不做 进入 {@link AbstractApplicationContext#postProcessBeanFactory}
 				 *
 				 * 此时所有的 Bean definition 都已经加载但是还没有 Bean 被创建。
 				 * 	1.当前上下文是 EmbeddedWebApplicationContext 时，
@@ -641,6 +641,9 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 				 * 4. 如果存在 LiveBeansView MBean 的话，关联到当前上下文,当前上下文是EmbeddedWebApplicationContext的情况下，还会：
 				 * 5. 启动EmbeddedServletContainer，比如启动内置 tomcat容器
 				 * 6. 发布事件 EmbeddedServletContainerInitializedEvent
+				 *
+				 * springboot 环境进入 ServletWebServerApplicationContext 类，但是方法中还是会调用父类 {@link AbstractApplicationContext#finishRefresh()}
+				 *
 				 */
 				finishRefresh();
 			}
@@ -1057,6 +1060,10 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 	 * Finish the refresh of this context, invoking the LifecycleProcessor's
 	 * onRefresh() method and publishing the
 	 * {@link org.springframework.context.event.ContextRefreshedEvent}.
+	 *
+	 * one-to-zero:
+	 * 	方法中只会发布一个事件 {@link ContextRefreshedEvent}
+	 *
 	 */
 	protected void finishRefresh() {
 		// Clear context-level resource caches (such as ASM metadata from scanning).
@@ -1072,6 +1079,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 		getLifecycleProcessor().onRefresh();
 
 		// Publish the final event.
+		/* 发布 ContextRefreshedEvent 事件 */
 		publishEvent(new ContextRefreshedEvent(this));
 
 		// Participate in LiveBeansView MBean, if active.
