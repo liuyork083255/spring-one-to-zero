@@ -550,7 +550,6 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 				 * 这个方法主要注册web请求相关的处理器和bean以及配置 进入 springboot：{@link AnnotationConfigServletWebServerApplicationContext#postProcessBeanFactory}
 				 * 比如启动方式是非 web 环境，那么这个方法什么都不做 进入 {@link AbstractApplicationContext#postProcessBeanFactory}
 				 *
-				 * 此时所有的 Bean definition 都已经加载但是还没有 Bean 被创建。
 				 * 	1.当前上下文是 EmbeddedWebApplicationContext 时，
 				 * 		这个步骤中会对 beanFactory 注册一个 BeanPostProcessor : WebApplicationContextServletContextAwareProcessor
 				 *  2.当前上下文是 AnnotationConfigEmbeddedWebApplicationContext 时，
@@ -570,6 +569,8 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 				 * 	BeanFactoryPostProcessor : 作用在 Bean 定义上，用来定制修改 Bean 定义
 				 * 	BeanPostProcessor ：作用在 Bean 实例上，用来修改或者包装 Bean 实例
 				 *
+				 * 绝大多数的 bean definition 都是在这个方法中解析得到的，然后加入 beanFactory
+				 *
 				 * 该方法实际上将实现委托出去：{@link PostProcessorRegistrationDelegate#invokeBeanFactoryPostProcessors}
 				 */
 				invokeBeanFactoryPostProcessors(beanFactory);
@@ -578,6 +579,8 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 				 * 注册 BeanPostProcessor 的实现类
 				 * Note:这里仅仅是注册实现了 {@link org.springframework.beans.factory.config.BeanPostProcessor}
 				 * 		spring 中有各种 bean，最常见的就是业务逻辑的 bean，还有一些 spring 中的 bean，这里就是就是注册实现了 BeanPostProcessor 的 bean
+				 *
+				 * 因为要保证业务 bean 在创建前后进行拦截，所以 BeanPostProcessor bean 必须需要提前创建，这里就是创建实例然后注册到 beanFactory 中
 				 *
 				 * 这个方法主要是注册实现了的 bean 后处理器
 				 * 该步骤实际工作委托给工具类 PostProcessorRegistrationDelegate 的静态方法 {@link PostProcessorRegistrationDelegate#registerBeanPostProcessors}
@@ -849,11 +852,12 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 	 */
 	protected void invokeBeanFactoryPostProcessors(ConfigurableListableBeanFactory beanFactory) {
 		/**
-		 * 调用所有的实现了BeanFactoryPostProcessor接口的类的方法，调用postProcessBeanDefinitionRegistry方法的时候按照会按照一定顺序来调用
-		 * 1.调用实现PriorityOrdered的BeanDefinitionRegistryPostProcessors
-		 * 2.调用实现Ordered的BeanDefinitionRegistryPostProcessors
-		 * 3.调用所有其他BeanDefinitionRegistryPostProcessors，直到不再出现其他BeanDefinitionRegistryPostProcessors
-		 * 调用postProcessBeanFactory没有顺序
+		 * 调用所有的实现了 {@link BeanFactoryPostProcessor} 接口的类的方法，调用 postProcessBeanDefinitionRegistry 方法的时候按照会按照一定顺序来调用
+		 * 1.调用实现 PriorityOrdered 的 BeanDefinitionRegistryPostProcessors
+		 * 2.调用实现 Ordered 的 BeanDefinitionRegistryPostProcessors
+		 * 3.调用所有其他 BeanDefinitionRegistryPostProcessors，直到不再出现其他 BeanDefinitionRegistryPostProcessors
+		 * 调用 postProcessBeanFactory 没有顺序
+		 * 这个方法就是核心加载 beanDefinition 到 beanFactory
 		 */
 		PostProcessorRegistrationDelegate.invokeBeanFactoryPostProcessors(beanFactory, getBeanFactoryPostProcessors());
 
@@ -874,10 +878,13 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 	protected void registerBeanPostProcessors(ConfigurableListableBeanFactory beanFactory) {
 		/**
 		 * 这里的注册所有的实现了BeanPostProcessor接口的类的方法一定顺序来注册
-		 * 1.注册实现PriorityOrdered的BeanPostProcessor
-		 * 2.注册实现Ordered的BeanPostProcessor
-		 * 3.注册所有其他BeanPostProcessor，直到不再出现其他BeanPostProcessor
-		 * 最后，重新注册ApplicationListenerDetector为后处理器以检测内部bean实现ApplicationListener接口的，并将其移动到处理器链的末尾
+		 * 1.注册实现 {@link org.springframework.core.PriorityOrdered} 的 BeanPostProcessor
+		 * 2.注册实现 {@link org.springframework.core.Ordered} 的 BeanPostProcessor
+		 * 3.注册所有其他 BeanPostProcessor，直到不再出现其他 BeanPostProcessor
+		 * 	原因是：spring BeanPostProcessor 允许有优先级的，优先级高的要比低的优先执行 PriorityOrdered 高于 Ordered
+		 *
+		 *
+		 * 最后，重新注册 ApplicationListenerDetector为后处理器以检测内部 bean 实现 ApplicationListener 接口的，并将其移动到处理器链的末尾
 		 */
 		PostProcessorRegistrationDelegate.registerBeanPostProcessors(beanFactory, this);
 	}

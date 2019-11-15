@@ -43,6 +43,12 @@ package org.springframework.core;
  * @since 2.5
  * @see org.springframework.beans.factory.config.PropertyOverrideConfigurer
  * @see org.springframework.beans.factory.config.PropertyPlaceholderConfigurer
+ *
+ * one-to-zero:
+ * 		1. 若对象o1是 Ordered 接口类型，o2是 PriorityOrdered 接口类型，那么o2的优先级高于o1
+ *		2. 若对象o1是 PriorityOrdered 接口类型，o2是 Ordered 接口类型，那么o1的优先级高于o2
+ *		3. 其他情况，若两者都是Ordered接口类型或两者都是PriorityOrdered接口类型，调用Ordered接口的getOrder方法得到order值，order值越大，优先级越小
+ *
  */
 public interface PriorityOrdered extends Ordered {
 }
