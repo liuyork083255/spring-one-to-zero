@@ -58,6 +58,52 @@ public class DeferredResult<T> {
 	private static final Log logger = LogFactory.getLog(DeferredResult.class);
 
 
+	/**
+	 * 测试中，如果没有设置，那么调用  {@link this#getTimeoutValue()} 为 null
+	 * 但是并不意味着就是没有超时时间，在 springboot 中测试得出如果没有设置该值，那么超时时间为 30s
+	 *
+	 * 该值可以通过构造方法设置
+	 *
+	 * otz:
+	 * 	由于这种长连接方式不能获取到底层的 channel，所以无法直接控制连接状态
+	 * 	案例: 通过 mac 机器命令 lsof -i tcp:8080 查看 tcp 连接状态
+	 * 		1 服务端启动 8080 ： TCP *:http-alt (LISTEN)  服务端在监听状态
+	 * 		2 客户端连接请求，超时时间为 100s，如果双方建立好连接后
+	 * 			TCP localhost:63790->localhost:http-alt (ESTABLISHED)
+	 * 			TCP localhost:http-alt->localhost:63790 (ESTABLISHED)
+	 * 		  分别是服务端指向客户端，和客户端指向服务端的连接，ESTABLISHED 表示连接已经建立，正常通信中
+	 * 		3 此时还没有超时，客户端直接断开连接
+	 * 			TCP localhost:http-alt->localhost:63790 (CLOSE_WAIT)
+	 * 		 	客户端的连接已经消失，剩下的只有服务端还在等待连接断开，状态为:CLOSE_WAIT，此时服务端资源还是被占用
+	 * 		4 超时间到
+	 * 			步骤 3 中的连接会被释放，服务端的连接关闭，占用资源被释放
+	 *
+	 *	tcp 连接状态有 5 个，参考:https://www.cnblogs.com/jiunadianshi/articles/2981068.html
+	 *
+	 *
+	 * 	在上述问题中发现一个bug，当然，可能是自己现在还没有找到 spring 提供的方案：
+	 * 		bug: 这个类提供了 {@link this#setResult(Object)} 的返回值来判断是否相应成功，但是测试下来发现，
+	 * 		只有当前的 DeferredResult 没有超时，并且没有调用 {@link this#setResult(Object)}，那么返回 true，
+	 * 		问题: 如果客户端连接，然后主动断开连接，服务端不知道，并且之后调用 {@link this#setResult(Object)} 方法，返回 true，
+	 * 		服务端认为自己响应成功了，其实该链接早就断开了???
+	 *
+	 * 		这种现象其实在普通的请求中也会存在，比如 client 发送一个 get 请求，服务端睡 10s，这期间将客户端请求断开，服务端还是正常响应，
+	 * 		比不会知晓客户端已经断开
+	 *
+	 * ==========================================================================================================
+	 * DeferredResult 调用 {@link this#setResult(Object)} 方法完成响应，其实连接并没有因此断开，也就是 keepAlive 和 DeferredResult
+	 * 是不矛盾的，这样次就衍生处了两个过期时间，keepAlive 和 DeferredResult-timeout
+	 * 其实很好理解:
+	 * 		不管 timeout 小于还是大于 keepAlive(默认 60s)
+	 * 			a: 在 timeout 时间内完成响应，keepAlive 仍然有效，因为默认往后延 1 分钟过期
+	 * 			b: 在 timeout 时间内没有响应，触发超时异常，那么服务端抛出异常，并且 keepAlive 直接断开
+	 *
+	 * ==========================================================================================================
+	 * 根据 tcp 协议，任何一方主动断开连接，都会发送执行给对方，
+	 * 目前知道的是如果 client 主动断开连接，那么会发送 EOF 到服务端，
+	 * 在 netty 中服务端会触发 read 事件，然后会读取判断该值，如果是 EOF，那触发 close 相关事件，AbstractNioByteChannel#read 方法中
+	 *
+	 */
 	@Nullable
 	private final Long timeoutValue;
 
@@ -152,6 +198,10 @@ public class DeferredResult<T> {
 
 	/**
 	 * Return the configured timeout value in milliseconds.
+	 * otz:
+	 * 	 测试中，如果没有设置，那么调用  {@link this#getTimeoutValue()} 为 null
+	 * 	 但是并不意味着就是没有超时时间，在 springboot 中测试得出如果没有设置该值，那么超时时间为 30s
+	 *
 	 */
 	@Nullable
 	final Long getTimeoutValue() {
